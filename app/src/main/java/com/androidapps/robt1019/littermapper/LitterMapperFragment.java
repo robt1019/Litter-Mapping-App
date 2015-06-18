@@ -83,7 +83,8 @@ public class LitterMapperFragment extends Fragment implements
         mStartButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                recognizer.startListening(PHONE_SEARCH);
+//                recognizer.startListening(PHONE_SEARCH);
+                recognizer.startListening(RUBBISH_SEARCH);
             }
         });
 
@@ -150,6 +151,10 @@ public class LitterMapperFragment extends Fragment implements
         // Phonetic search
         File phoneticModel = new File(assetsDir, "en-phone.dmp");
         recognizer.addAllphoneSearch(PHONE_SEARCH, phoneticModel);
+
+        // Rubbish search
+        File rubbishGrammar = new File(assetsDir, "rubbish.gram");
+        recognizer.addGrammarSearch(RUBBISH_SEARCH, rubbishGrammar);
 
     }
 

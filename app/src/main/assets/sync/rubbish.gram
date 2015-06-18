@@ -1,0 +1,14 @@
+#JSGF V1.0;
+
+grammar rubbish;
+
+<item> =  mcdonald's  |
+          rubbish     |
+          bin         |
+          log bin     |
+          log rubbish |
+          bottle      |
+          can         |
+          plastic     ;
+
+public <rubbish> = <item>+;
