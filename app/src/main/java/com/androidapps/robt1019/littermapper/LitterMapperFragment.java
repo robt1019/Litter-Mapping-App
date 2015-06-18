@@ -29,11 +29,9 @@ public class LitterMapperFragment extends Fragment implements
         RecognitionListener {
 
     // Named searches allow for quickly reconfiguring decoder
-    private static final String PHONE_SEARCH = "phones";
     private static final String RUBBISH_SEARCH = "rubbish";
-
-    // Keyword to activate menu
-    private static final String KEYPHRASE = "testing";
+    private static final String BIN_SEARCH  = "bin";
+    private static final String MENU_SEARCH = "menu";
 
     private SpeechRecognizer recognizer;
     private HashMap<String, Integer> captions;
@@ -52,6 +50,9 @@ public class LitterMapperFragment extends Fragment implements
 
         // Prepare data for UI
         captions = new HashMap<String, Integer>();
+        captions.put(MENU_SEARCH, R.string.menu_caption);
+        captions.put(BIN_SEARCH, R.string.bin_caption);
+        captions.put(RUBBISH_SEARCH, R.string.rubbish_caption);
 
         ((TextView) view.findViewById(R.id.caption_text))
                 .setText("Preparing the recognizer");
@@ -76,6 +77,9 @@ public class LitterMapperFragment extends Fragment implements
                     ((TextView) view.findViewById(R.id.caption_text))
                             .setText("Failed to init recognizer " + result);
                 }
+                else {
+                    switchSearch(MENU_SEARCH);
+                }
             }
         }.execute();
 
@@ -83,8 +87,7 @@ public class LitterMapperFragment extends Fragment implements
         mStartButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                recognizer.startListening(PHONE_SEARCH);
-                recognizer.startListening(RUBBISH_SEARCH);
+                recognizer.startListening(MENU_SEARCH);
             }
         });
 
@@ -105,8 +108,11 @@ public class LitterMapperFragment extends Fragment implements
         }
 
         String text = hypothesis.getHypstr();
-        if (text.equals(KEYPHRASE)) {
-            // Do something once keyphrase is mentioned
+        if (text.equals(BIN_SEARCH)) {
+            switchSearch(BIN_SEARCH);
+        }
+        if (text.equals(RUBBISH_SEARCH)) {
+            switchSearch(RUBBISH_SEARCH);
         }
         else {
             ((TextView) getActivity().findViewById(R.id.result_text)).setText(text);
@@ -131,6 +137,20 @@ public class LitterMapperFragment extends Fragment implements
     public void onEndOfSpeech() {
     }
 
+    // Switch to different search string
+    private void switchSearch(String searchName) {
+        recognizer.stop();
+
+        // If we are not spotting, start listening with timeout (10000 ms or 10 seconds).
+        if (searchName.equals(MENU_SEARCH))
+            recognizer.startListening(searchName);
+        else
+            recognizer.startListening(searchName, 10000);
+
+        String caption = getResources().getString(captions.get(searchName));
+        ((TextView) getView().findViewById(R.id.caption_text)).setText(caption);
+    }
+
     private void setupRecognizer(File assetsDir) throws IOException {
         recognizer = defaultSetup()
                 .setAcousticModel(new File(assetsDir, "en-us-ptm"))
@@ -148,14 +168,17 @@ public class LitterMapperFragment extends Fragment implements
                 .getRecognizer();
         recognizer.addListener(this);
 
-        // Phonetic search
-        File phoneticModel = new File(assetsDir, "en-phone.dmp");
-        recognizer.addAllphoneSearch(PHONE_SEARCH, phoneticModel);
+        // Grammar based search switching to logging different types of data
+        File menuGrammar = new File(assetsDir, "menu.gram");
+        recognizer.addGrammarSearch(MENU_SEARCH, menuGrammar);
 
         // Rubbish search
         File rubbishGrammar = new File(assetsDir, "rubbish.gram");
         recognizer.addGrammarSearch(RUBBISH_SEARCH, rubbishGrammar);
 
+        // Bin search
+        File binGrammar = new File(assetsDir, "bin.gram");
+        recognizer.addGrammarSearch(BIN_SEARCH, binGrammar);
     }
 
     @Override
@@ -165,7 +188,7 @@ public class LitterMapperFragment extends Fragment implements
 
     @Override
     public void onTimeout() {
-
+        switchSearch(MENU_SEARCH);
     }
 
 }

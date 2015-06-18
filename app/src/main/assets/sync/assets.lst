@@ -1,3 +1,4 @@
+bin.gram
 cmudict-en-us.dict
 digits.gram
 en-phone.dmp
@@ -10,5 +11,6 @@ en-us-ptm/sendump
 en-us-ptm/transition_matrices
 en-us-ptm/variances
 menu.gram
+menu_backup.gram
 rubbish.gram
 weather.dmp
