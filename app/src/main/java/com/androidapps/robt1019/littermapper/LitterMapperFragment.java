@@ -201,7 +201,7 @@ public class LitterMapperFragment extends Fragment implements
         File typeGrammar = new File(assetsDir, "type.gram");
         recognizer.addGrammarSearch(TYPE_SEARCH, typeGrammar);
 
-        // Brand search
+        // Litter search
         File brandGrammar = new File(assetsDir, "brand.gram");
         recognizer.addGrammarSearch(BRAND_SEARCH, brandGrammar);
 

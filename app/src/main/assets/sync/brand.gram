@@ -1,6 +1,6 @@
 #JSGF V1.0;
 
-grammar brand;
+grammar litter;
 
 <item> =  mcdonald's    |
           burger king   |
@@ -8,4 +8,4 @@ grammar brand;
           walkers       |
           lucozade      ;
 
-public <brand> = <item>+;
+public <litter> = <item>+;

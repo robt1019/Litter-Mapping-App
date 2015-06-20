@@ -6,5 +6,5 @@ package com.androidapps.robt1019.littermapper;
 public class Type {
 
     private long mId;
-    private String name;
+    private String mName;
 }
