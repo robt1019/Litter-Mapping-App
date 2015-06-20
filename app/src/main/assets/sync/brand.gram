@@ -1,0 +1,11 @@
+#JSGF V1.0;
+
+grammar brand;
+
+<item> =  mcdonald's    |
+          burger king   |
+          walls         |
+          walkers       |
+          lucozade      ;
+
+public <brand> = <item>+;

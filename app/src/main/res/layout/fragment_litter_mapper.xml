@@ -6,20 +6,15 @@
 
     <TextView
         android:id="@+id/caption_text"
+        android:textSize="50dp"
         android:layout_gravity="center_horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <Button
-        android:id="@+id/startLoggingButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/start_logging"/>
-
     <TextView
         android:id="@+id/result_text"
+        android:textSize="25dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="placeholder"/>
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

@@ -2,4 +2,4 @@
 
 grammar menu;
 
-public <item> = rubbish | bin;
+public <menu> = litter item | bin item;

@@ -1,0 +1,9 @@
+#JSGF V1.0;
+
+grammar type;
+
+<item> =  glass       |
+          can         |
+          plastic     ;
+
+public <type> = <item>+;

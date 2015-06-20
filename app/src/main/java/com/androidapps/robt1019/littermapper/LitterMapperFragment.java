@@ -9,7 +9,6 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,14 +28,21 @@ public class LitterMapperFragment extends Fragment implements
         RecognitionListener {
 
     // Named searches allow for quickly reconfiguring decoder
-    private static final String RUBBISH_SEARCH = "rubbish";
-    private static final String BIN_SEARCH  = "bin";
+    private static final String KWS_SEARCH = "wakeup";
+    private static final String LITTER_SEARCH = "litter item";
+    private static final String TYPE_SEARCH = "litter type";
+    private static final String BRAND_SEARCH = "litter brand";
+    private static final String BIN_SEARCH  = "bin item";
     private static final String MENU_SEARCH = "menu";
+
+    // Search term timeout period
+    private static int SEARCH_TIMEOUT = 10000;
+
+    // Keyword looking for to activate menu
+    private static final String KEYPHRASE = "log item";
 
     private SpeechRecognizer recognizer;
     private HashMap<String, Integer> captions;
-
-    private Button mStartButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,9 +56,13 @@ public class LitterMapperFragment extends Fragment implements
 
         // Prepare data for UI
         captions = new HashMap<String, Integer>();
+
+        captions.put(KWS_SEARCH, R.string.kws_caption);
         captions.put(MENU_SEARCH, R.string.menu_caption);
         captions.put(BIN_SEARCH, R.string.bin_caption);
-        captions.put(RUBBISH_SEARCH, R.string.rubbish_caption);
+        captions.put(LITTER_SEARCH, R.string.litter_caption);
+        captions.put(BRAND_SEARCH, R.string.brand_caption);
+        captions.put(TYPE_SEARCH, R.string.type_caption);
 
         ((TextView) view.findViewById(R.id.caption_text))
                 .setText("Preparing the recognizer");
@@ -78,18 +88,10 @@ public class LitterMapperFragment extends Fragment implements
                             .setText("Failed to init recognizer " + result);
                 }
                 else {
-                    switchSearch(MENU_SEARCH);
+                    switchSearch(KWS_SEARCH);
                 }
             }
         }.execute();
-
-        mStartButton = (Button) view.findViewById(R.id.startLoggingButton);
-        mStartButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                recognizer.startListening(MENU_SEARCH);
-            }
-        });
 
         return view;
     }
@@ -108,11 +110,21 @@ public class LitterMapperFragment extends Fragment implements
         }
 
         String text = hypothesis.getHypstr();
-        if (text.equals(BIN_SEARCH)) {
+
+        if (text.equals(KEYPHRASE)) {
+            switchSearch(MENU_SEARCH);
+        }
+        else if (text.equals(BIN_SEARCH)) {
             switchSearch(BIN_SEARCH);
         }
-        if (text.equals(RUBBISH_SEARCH)) {
-            switchSearch(RUBBISH_SEARCH);
+        else if (text.equals(LITTER_SEARCH)) {
+            switchSearch(LITTER_SEARCH);
+        }
+        else if (text.equals(BRAND_SEARCH)) {
+            switchSearch(BRAND_SEARCH);
+        }
+        else if (text.equals(TYPE_SEARCH)) {
+            switchSearch(TYPE_SEARCH);
         }
         else {
             ((TextView) getActivity().findViewById(R.id.result_text)).setText(text);
@@ -135,17 +147,23 @@ public class LitterMapperFragment extends Fragment implements
 
     @Override
     public void onEndOfSpeech() {
+        if (!recognizer.getSearchName().equals(KWS_SEARCH)) {
+            switchSearch(KWS_SEARCH);
+        }
     }
 
     // Switch to different search string
     private void switchSearch(String searchName) {
         recognizer.stop();
 
-        // If we are not spotting, start listening with timeout (10000 ms or 10 seconds).
-        if (searchName.equals(MENU_SEARCH))
+        if (searchName.equals(KWS_SEARCH)) {
             recognizer.startListening(searchName);
-        else
-            recognizer.startListening(searchName, 10000);
+        }
+        // Set timeout for listening for search terms
+        else {
+            recognizer.startListening(searchName, SEARCH_TIMEOUT);
+        }
+
 
         String caption = getResources().getString(captions.get(searchName));
         ((TextView) getView().findViewById(R.id.caption_text)).setText(caption);
@@ -168,13 +186,24 @@ public class LitterMapperFragment extends Fragment implements
                 .getRecognizer();
         recognizer.addListener(this);
 
+        //Keyword activation for initializing voice-recognition
+        recognizer.addKeyphraseSearch(KWS_SEARCH, KEYPHRASE);
+
         // Grammar based search switching to logging different types of data
         File menuGrammar = new File(assetsDir, "menu.gram");
         recognizer.addGrammarSearch(MENU_SEARCH, menuGrammar);
 
-        // Rubbish search
-        File rubbishGrammar = new File(assetsDir, "rubbish.gram");
-        recognizer.addGrammarSearch(RUBBISH_SEARCH, rubbishGrammar);
+        // Grammar based search for litter menu
+        File litterGrammar = new File(assetsDir, "litter.gram");
+        recognizer.addGrammarSearch(LITTER_SEARCH, litterGrammar);
+
+        // Type search (Glass, Plastic etc.)
+        File typeGrammar = new File(assetsDir, "type.gram");
+        recognizer.addGrammarSearch(TYPE_SEARCH, typeGrammar);
+
+        // Brand search
+        File brandGrammar = new File(assetsDir, "brand.gram");
+        recognizer.addGrammarSearch(BRAND_SEARCH, brandGrammar);
 
         // Bin search
         File binGrammar = new File(assetsDir, "bin.gram");
@@ -183,12 +212,12 @@ public class LitterMapperFragment extends Fragment implements
 
     @Override
     public void onError(Exception e) {
-
+        ((TextView) getView().findViewById(R.id.caption_text)).setText(e.getMessage());
     }
 
     @Override
     public void onTimeout() {
-        switchSearch(MENU_SEARCH);
+        switchSearch(KWS_SEARCH);
     }
 
 }

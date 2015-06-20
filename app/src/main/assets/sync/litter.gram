@@ -1,0 +1,5 @@
+#JSGF V1.0;
+
+grammar litter;
+
+public <litter> = litter type | litter brand;

@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">Litter Mapper</string>
-    <string name="start_logging">Start logging</string>
-    <string name="menu_caption">Listening. Say "rubbish" to report a piece of rubbish or "bin" to report a bin</string>
-    <string name="rubbish_caption">What kind of rubbish was it? (Plastic, Glass, Can)</string>
-    <string name="bin_caption">What kind of bin was it? (Recycling or Landfill)</string>
+    <string name="kws_caption">Say \'log item\' to report an item</string>
+    <string name="menu_caption">Listening. Say \'litter item\' to report a piece of litter or \'bin item\' to report a bin</string>
+    <string name="litter_caption">Log \'litter type\' or log \'litter brand\'?</string>
+    <string name="bin_caption">What kind of bin was it? (\'Recycling\' or \'Landfill\')</string>
+    <string name="brand_caption">What brand was it?</string>
+    <string name="type_caption">What type of litter was it? (\'Glass\', \'plastic\' or \'can\')</string>
 </resources>

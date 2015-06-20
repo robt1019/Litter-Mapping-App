@@ -1,6 +1,6 @@
 bin.gram
+brand.gram
 cmudict-en-us.dict
-digits.gram
 en-phone.dmp
 en-us-ptm/README
 en-us-ptm/feat.params
@@ -10,7 +10,6 @@ en-us-ptm/noisedict
 en-us-ptm/sendump
 en-us-ptm/transition_matrices
 en-us-ptm/variances
+litter.gram
 menu.gram
-menu_backup.gram
-rubbish.gram
-weather.dmp
+type.gram
