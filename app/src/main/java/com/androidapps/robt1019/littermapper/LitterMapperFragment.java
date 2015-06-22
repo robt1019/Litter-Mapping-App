@@ -41,6 +41,10 @@ public class LitterMapperFragment extends Fragment implements
     // Keyword looking for to activate menu
     private static final String KEYPHRASE = "log item";
 
+    private LitterManager mLitterManager;
+    private LitterMapperDBHelper mHelper;
+    private Litter litter;
+
     private SpeechRecognizer recognizer;
     private HashMap<String, Integer> captions;
 
@@ -51,6 +55,11 @@ public class LitterMapperFragment extends Fragment implements
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+        // initialize LitterManager if not already initialized
+        mLitterManager = LitterManager.get(getActivity());
 
         final View view =  inflater.inflate(R.layout.fragment_litter_mapper, container, false);
 
@@ -67,6 +76,7 @@ public class LitterMapperFragment extends Fragment implements
         ((TextView) view.findViewById(R.id.caption_text))
                 .setText("Preparing the recognizer");
 
+        // Set up recognizer in asynchronous method as it takes lots of time
         new AsyncTask<Void, Void, Exception>() {
             @Override
             protected Exception doInBackground(Void... voids) {
@@ -133,10 +143,12 @@ public class LitterMapperFragment extends Fragment implements
 
     @Override
     public void onResult(Hypothesis hypothesis) {
+
         ((TextView) getActivity().findViewById(R.id.result_text)).setText("");
         if (hypothesis != null) {
             String text = hypothesis.getHypstr();
             makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
+
         }
     }
 
