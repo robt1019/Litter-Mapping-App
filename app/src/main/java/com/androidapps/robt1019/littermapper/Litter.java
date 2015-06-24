@@ -9,6 +9,7 @@ import java.util.Date;
 public class Litter {
     private long mId;
     private String mBrand;
+    private String mType;
     private Date mDate;
 
     public Litter() {
@@ -34,6 +35,14 @@ public class Litter {
 
     public void setDate(Date mDate) {
         this.mDate = mDate;
+    }
+
+    public String getType() {
+        return mType;
+    }
+
+    public void setType(String mType) {
+        this.mType = mType;
     }
 
     public void setId(long mId) {

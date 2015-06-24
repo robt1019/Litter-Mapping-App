@@ -6,4 +6,5 @@
     <string name="bin_caption">What kind of bin was it? (\'Recycling\' or \'Landfill\')</string>
     <string name="brand_caption">What litter was it?</string>
     <string name="type_caption">What type of litter was it? (\'Glass\', \'plastic\' or \'can\')</string>
+    <string name="cell_text">Litter: </string>
 </resources>

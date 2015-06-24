@@ -24,7 +24,12 @@ public class LitterManager {
         return sLitterManager;
     }
 
-    public void insertLitter (String text) {
-        // Code for inserting into SQLiteDatabase object
+    public Litter insertLitter (Litter litter) {
+        litter.setId(mHelper.insertLitter(litter));
+        return litter;
+    }
+
+    public LitterMapperDBHelper.LitterCursor queryLitterItems() {
+        return mHelper.queryLitterItems();
     }
 }
