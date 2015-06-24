@@ -42,6 +42,7 @@ public class LitterMapperFragment extends Fragment implements
     private static final String KEYPHRASE = "log item";
 
     private String currentSearch;
+    private String nextSearch;
     private LitterManager mLitterManager;
     private Litter litter;
 
@@ -50,6 +51,9 @@ public class LitterMapperFragment extends Fragment implements
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        // Default next search and current search are KWS_SEARCH
+        nextSearch = KWS_SEARCH;
+        currentSearch = KWS_SEARCH;
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         // initialize LitterManager if not already initialized
@@ -61,7 +65,7 @@ public class LitterMapperFragment extends Fragment implements
 
         final View view =  inflater.inflate(R.layout.fragment_litter_mapper, container, false);
 
-        // Prepare data for UI
+        // Prepare data for UIX
         captions = new HashMap<String, Integer>();
 
         captions.put(KWS_SEARCH, R.string.kws_caption);
@@ -122,18 +126,23 @@ public class LitterMapperFragment extends Fragment implements
         if (text.equals(KEYPHRASE)) {
             switchSearch(MENU_SEARCH);
         }
-        else if (text.equals(BIN_SEARCH)) {
+        if (text.equals(BIN_SEARCH)) {
             switchSearch(BIN_SEARCH);
         }
         else if (text.equals(LITTER_SEARCH)) {
             switchSearch(LITTER_SEARCH);
+            nextSearch = LITTER_SEARCH;
             litter = new Litter();
         }
         else if (text.equals(BRAND_SEARCH)) {
             switchSearch(BRAND_SEARCH);
+            // Keep track of currentSearch for routing purposes
+            currentSearch = text;
         }
         else if (text.equals(TYPE_SEARCH)) {
             switchSearch(TYPE_SEARCH);
+            // Keep track of currentSearch for routing purposes
+            currentSearch = text;
         }
         else {
             ((TextView) getActivity().findViewById(R.id.result_text)).setText(text);
@@ -147,21 +156,27 @@ public class LitterMapperFragment extends Fragment implements
         if (hypothesis != null) {
             String text = hypothesis.getHypstr();
             // Check whether litter object has already been created
-            if (litter.getBrand() == null || litter.getType() == null) {
-                // Set litter brand/type if not already set
-                if (currentSearch.equals(BRAND_SEARCH)) {
-                    litter.setBrand(text);
-                    switchSearch(LITTER_SEARCH);
+            if(litter != null) {
+                // Ensures litter object has not already been fully populated with data
+                if (litter.getBrand() == null || litter.getType() == null) {
+                    // Set litter brand/type if not already set
+                    if (currentSearch.equals(BRAND_SEARCH) && !text.equals(BRAND_SEARCH)) {
+                        litter.setBrand(text);
+                        Toast.makeText(getActivity(), "set litter brand", Toast.LENGTH_SHORT).show();
+                    }
+                    if (currentSearch.equals(TYPE_SEARCH) && !text.equals(TYPE_SEARCH)) {
+                        litter.setType(text);
+                        Toast.makeText(getActivity(), "set litter type", Toast.LENGTH_SHORT).show();
+                    }
                 }
-                if (currentSearch.equals(TYPE_SEARCH)) {
-                    litter.setType(text);
-                    switchSearch(LITTER_SEARCH);
+                // Insert litter object into database and reset litter object to null
+                if (litter.getBrand() != null && litter.getType() != null) {
+                    mLitterManager.insertLitter(litter);
+                    nextSearch = KWS_SEARCH;
+                    switchSearch(nextSearch);
+                    litter = null;
+                    Toast.makeText(getActivity(), "inserted litter object and reset litter", Toast.LENGTH_SHORT).show();
                 }
-            }
-            // Insert litter object into database and reset litter object to null
-            else {
-                mLitterManager.insertLitter(litter);
-                litter = null;
             }
             makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
         }
@@ -175,15 +190,13 @@ public class LitterMapperFragment extends Fragment implements
     @Override
     public void onEndOfSpeech() {
         if (!recognizer.getSearchName().equals(KWS_SEARCH)) {
-            switchSearch(KWS_SEARCH);
+            switchSearch(nextSearch);
         }
     }
 
     // Switch to different search string
     private void switchSearch(String searchName) {
         recognizer.stop();
-        // Keep track of currentSearch for routing purposes
-        currentSearch = searchName;
 
         if (searchName.equals(KWS_SEARCH)) {
             recognizer.startListening(searchName);
@@ -245,7 +258,8 @@ public class LitterMapperFragment extends Fragment implements
 
     @Override
     public void onTimeout() {
-        switchSearch(KWS_SEARCH);
+        switchSearch(nextSearch);
+        currentSearch = nextSearch;
     }
 
 }

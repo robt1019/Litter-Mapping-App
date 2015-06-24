@@ -2,4 +2,4 @@
 
 grammar litter;
 
-public <litter> = litter type | litter litter;
+public <litter> = litter type | litter brand;

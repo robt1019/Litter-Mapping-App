@@ -24,9 +24,9 @@ public class LitterManager {
         return sLitterManager;
     }
 
-    public Litter insertLitter (Litter litter) {
-        litter.setId(mHelper.insertLitter(litter));
-        return litter;
+    public void insertLitter (Litter litter) {
+//        litter.setId(mHelper.insertLitter(litter));
+        mHelper.insertLitter(litter);
     }
 
     public LitterMapperDBHelper.LitterCursor queryLitterItems() {

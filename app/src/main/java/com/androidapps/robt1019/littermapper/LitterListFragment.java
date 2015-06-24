@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Created by rob on 24/06/15.
@@ -51,7 +52,7 @@ public class LitterListFragment extends ListFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_item_new_litter:
-                Intent i = new Intent(getActivity(), LitterListActivity.class);
+                Intent i = new Intent(getActivity(), LitterMapperActivity.class);
                 startActivityForResult(i, REQUEST_NEW_LITTER);
                 return true;
             default:
@@ -101,8 +102,8 @@ public class LitterListFragment extends ListFragment {
             // Set up the date text view
             TextView dateTextView = (TextView)view;
             String cellText =
-                    context.getString(R.string.cell_text, litter.getDate(),
-                            litter.getBrand(), litter.getType());
+                    context.getString(R.string.cell_text) + " " + litter.getDate()
+                    + " " + litter.getBrand() + " " + litter.getType();
             dateTextView.setText(cellText);
         }
     }
