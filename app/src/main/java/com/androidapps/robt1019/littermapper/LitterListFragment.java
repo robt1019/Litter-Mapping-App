@@ -14,7 +14,6 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /**
  * Created by rob on 24/06/15.
@@ -68,13 +67,14 @@ public class LitterListFragment extends ListFragment {
         }
     }
 
-    @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        // the id argument will be the Litter ID; This is given by CursorAdapter for free
-        Intent i = new Intent(getActivity(), LitterMapperActivity.class);
-        i.putExtra(LitterMapperActivity.EXTRA_LITTER_ID, id);
-        startActivity(i);
-    }
+// Use this to decide what happens when a litter/bin item is clicked on (editable?)
+//    @Override
+//    public void onListItemClick(ListView l, View v, int position, long id) {
+//        // the id argument will be the Litter ID; This is given by CursorAdapter for free
+//        Intent i = new Intent(getActivity(), LitterMapperActivity.class);
+//        i.putExtra(LitterMapperActivity.EXTRA_LITTER_ID, id);
+//        startActivity(i);
+//    }
 
     private static class LitterCursorAdapter extends CursorAdapter {
 
