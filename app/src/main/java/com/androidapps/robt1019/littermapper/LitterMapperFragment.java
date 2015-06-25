@@ -5,6 +5,7 @@ import static edu.cmu.pocketsphinx.SpeechRecognizerSetup.defaultSetup;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +21,7 @@ import edu.cmu.pocketsphinx.SpeechRecognizer;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Locale;
 
 /**
  * Created by rob on 16/06/15.
@@ -41,12 +43,12 @@ public class LitterMapperFragment extends Fragment implements
 //    // Keyword looking for to activate menu
 //    private static final String KEYPHRASE = "log item";
 
-//    private String mNextSearch;
     private LitterManager mLitterManager;
     private Litter mLitter;
     private boolean mListening;
 
     private SpeechRecognizer recognizer;
+    private TextToSpeech mSpeaker;
     private HashMap<String, Integer> captions;
 
     public String getCurrentSearch() {
@@ -61,6 +63,16 @@ public class LitterMapperFragment extends Fragment implements
         setRetainInstance(true);
         // initialize LitterManager if not already initialized
         mLitterManager = LitterManager.get(getActivity());
+        // Set up text to speech object
+        mSpeaker = new TextToSpeech(getActivity(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status != TextToSpeech.ERROR) {
+                    mSpeaker.setLanguage(Locale.UK);
+                }
+            }
+        }
+        );
     }
 
     @Override
@@ -174,13 +186,16 @@ public class LitterMapperFragment extends Fragment implements
                 if (mLitter.getBrand() != null && mLitter.getType() != null) {
                     mLitterManager.insertLitter(mLitter);
                     switchSearch(INTRO);
-                    Toast.makeText(getActivity(), "litter object " + mLitter.getBrand() + ": "
-                            + mLitter.getType() + " successfully logged", Toast.LENGTH_LONG).show();
+                    String toastText = "litter object " + mLitter.getBrand() + ": "
+                            + mLitter.getType() + " successfully logged";
+                    Toast.makeText(getActivity(), toastText, Toast.LENGTH_LONG).show();
+                    mSpeaker.speak(toastText, TextToSpeech.QUEUE_FLUSH, null);
                     mLitter = null;
                     return;
                 }
             }
-            makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
+            mSpeaker.speak(text, TextToSpeech.QUEUE_FLUSH, null);
         }
     }
 
@@ -197,7 +212,6 @@ public class LitterMapperFragment extends Fragment implements
     }
 
     public void startLitterItem() {
-//        setNextSearch(LITTER_SEARCH);
         mLitter = new Litter();
     }
 
