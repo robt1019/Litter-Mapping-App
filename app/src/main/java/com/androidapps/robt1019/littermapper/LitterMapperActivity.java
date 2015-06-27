@@ -1,5 +1,9 @@
 package com.androidapps.robt1019.littermapper;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.media.AudioManager;
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.KeyEvent;
 
@@ -10,10 +14,23 @@ public class LitterMapperActivity extends SingleFragmentActivity {
     public static final String EXTRA_LITTER_ID =
             "com.androidapps.robt1019.littermapper";
 
+    private AudioManager mAudioManager;
+    private ComponentName mRemoteControlResponder;
+
     @Override
     protected Fragment createFragment() {
         return new LitterMapperFragment();
     }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        mRemoteControlResponder = new ComponentName(getPackageName(),
+            RemoteControlReceiver.class.getName());
+    }
+
+
 
     // If relevant key press detected, handle event and exit function, otherwise pass to rest of Android components.
     @Override
