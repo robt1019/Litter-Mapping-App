@@ -19,7 +19,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".LitterMapperActivity"
+        <activity android:name=".PocketSphinxActivity"
+            android:label="Litter Mapper" />
+        <activity android:name=".GoogleVoiceActivity"
             android:label="Litter Mapper" />
     </application>
 

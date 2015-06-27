@@ -1,6 +1,5 @@
 package com.androidapps.robt1019.littermapper;
 
-import static android.widget.Toast.makeText;
 import static edu.cmu.pocketsphinx.SpeechRecognizerSetup.defaultSetup;
 
 import android.os.AsyncTask;
@@ -10,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,7 +26,7 @@ import java.util.Locale;
 /**
  * Created by rob on 16/06/15.
  */
-public class LitterMapperFragment extends Fragment implements
+public class PocketSphinxFragment extends Fragment implements
         RecognitionListener {
 
     // Named searches allow for quickly reconfiguring decoder
@@ -46,6 +46,7 @@ public class LitterMapperFragment extends Fragment implements
     private LitterManager mLitterManager;
     private Litter mLitter;
     private boolean mListening;
+    private Button mStartListeningButton;
 
     private SpeechRecognizer recognizer;
     private TextToSpeech mSpeaker;
@@ -119,6 +120,14 @@ public class LitterMapperFragment extends Fragment implements
                 }
             }
         }.execute();
+
+        mStartListeningButton = (Button)view.findViewById(R.id.start_listening_button);
+        mStartListeningButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                toggleListening(getCurrentSearch());
+            }
+        });
 
         return view;
     }
@@ -299,5 +308,14 @@ public class LitterMapperFragment extends Fragment implements
     public void stopListening() {
         recognizer.stop();
         updateListeningStatus(false);
-       }
+    }
+
+    public void toggleListening(String currentSearch) {
+        if (!mListening) {
+            startListening(currentSearch);
+        }
+        else {
+            stopListening();
+        }
+    }
 }

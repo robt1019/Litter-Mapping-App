@@ -7,4 +7,6 @@
     <string name="brand_caption">What brand was it?</string>
     <string name="type_caption">What type of litter was it? (\'Glass\', \'plastic\' or \'can\')</string>
     <string name="cell_text">Litter: </string>
+    <string name="offline_option">New Offline outing</string>
+    <string name="online_option">New Online outing</string>
 </resources>
