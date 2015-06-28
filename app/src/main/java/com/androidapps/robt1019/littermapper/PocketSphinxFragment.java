@@ -1,15 +1,16 @@
 package com.androidapps.robt1019.littermapper;
 
-import static android.widget.Toast.makeText;
 import static edu.cmu.pocketsphinx.SpeechRecognizerSetup.defaultSetup;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,15 +27,17 @@ import java.util.Locale;
 /**
  * Created by rob on 16/06/15.
  */
-public class LitterMapperFragment extends Fragment implements
+public class PocketSphinxFragment extends Fragment implements
         RecognitionListener {
+
+    private static final String TAG = PocketSphinxFragment.class.getName();
 
     // Named searches allow for quickly reconfiguring decoder
     private static final String INTRO = "intro";
     public static final String LITTER_SEARCH = "litter item";
     private static final String TYPE_SEARCH = "litter type";
     private static final String BRAND_SEARCH = "litter brand";
-    public static final String BIN_SEARCH  = "bin item";
+    public static final String BIN_SEARCH  = "log rubbish bin";
     public static final String MENU_SEARCH = "menu";
 
 //    // Search term timeout period
@@ -45,7 +48,13 @@ public class LitterMapperFragment extends Fragment implements
 
     private LitterManager mLitterManager;
     private Litter mLitter;
-    private boolean mListening;
+    private boolean listening;
+    private String nextSearch;
+    private Button mStartListeningButton;
+    private boolean litterLogged = false;
+    private boolean brandLogged = false;
+    private boolean typeLogged = false;
+    private boolean binLogged = false;
 
     private SpeechRecognizer recognizer;
     private TextToSpeech mSpeaker;
@@ -58,21 +67,11 @@ public class LitterMapperFragment extends Fragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
 //        // Default next search and current search are INTRO
-//        mNextSearch = INTRO;
+        nextSearch = MENU_SEARCH;
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         // initialize LitterManager if not already initialized
         mLitterManager = LitterManager.get(getActivity());
-        // Set up text to speech object
-        mSpeaker = new TextToSpeech(getActivity(), new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                if (status != TextToSpeech.ERROR) {
-                    mSpeaker.setLanguage(Locale.UK);
-                }
-            }
-        }
-        );
     }
 
     @Override
@@ -93,7 +92,7 @@ public class LitterMapperFragment extends Fragment implements
         ((TextView) view.findViewById(R.id.caption_text))
                 .setText("Getting ready");
 
-        // Set up recognizer in asynchronous method as it takes lots of time
+        // Set up recognizers in asynchronous method as it takes lots of time
         new AsyncTask<Void, Void, Exception>() {
             @Override
             protected Exception doInBackground(Void... voids) {
@@ -101,6 +100,16 @@ public class LitterMapperFragment extends Fragment implements
                     Assets assets = new Assets(getActivity());
                     File assetDir = assets.syncAssets();
                     setupRecognizer(assetDir);
+                    // Set up text to speech object
+                    mSpeaker = new TextToSpeech(getActivity(), new TextToSpeech.OnInitListener() {
+                        @Override
+                        public void onInit(int status) {
+                            if (status != TextToSpeech.ERROR) {
+                                mSpeaker.setLanguage(Locale.UK);
+                            }
+                        }
+                    }
+                    );
                 }
                 catch (IOException e) {
                     return e;
@@ -115,10 +124,26 @@ public class LitterMapperFragment extends Fragment implements
                             .setText("Failed to init recognizer " + result);
                 }
                 else {
-                    switchSearch(INTRO);
+                    Log.d(TAG, "onPostExecute");
+                    switchSearch(MENU_SEARCH);
                 }
             }
         }.execute();
+
+        mStartListeningButton = (Button)view.findViewById(R.id.start_listening_button);
+        mStartListeningButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(getCurrentSearch().equals(BRAND_SEARCH)
+                        || getCurrentSearch().equals(TYPE_SEARCH)
+                        || getCurrentSearch().equals(BIN_SEARCH)) {
+                    toggleListening(nextSearch);
+                }
+                else {
+                    toggleListening(getCurrentSearch());
+                }
+            }
+        });
 
         return view;
     }
@@ -141,16 +166,19 @@ public class LitterMapperFragment extends Fragment implements
 //        if (text.equals(KEYPHRASE)) {
 //            switchSearch(MENU_SEARCH);
 //        }
-//        else if (text.equals(BIN_SEARCH)) {
-//            switchSearch(BIN_SEARCH);
-//        }
+        if (text.equals(BIN_SEARCH)) {
+//            switchSearchString(BIN_SEARCH);
+            switchSearch(BIN_SEARCH);
+        }
 //        else if (text.equals(LITTER_SEARCH)) {
 //            switchSearch(LITTER_SEARCH);
 //        }
-        if (text.equals(BRAND_SEARCH)) {
+        else if (text.equals(BRAND_SEARCH)) {
+//            switchSearchString(BRAND_SEARCH);
             switchSearch(BRAND_SEARCH);
         }
         else if (text.equals(TYPE_SEARCH)) {
+//            switchSearchString(TYPE_SEARCH);
             switchSearch(TYPE_SEARCH);
         }
         else {
@@ -162,34 +190,51 @@ public class LitterMapperFragment extends Fragment implements
     public void onResult(Hypothesis hypothesis) {
 
         ((TextView) getActivity().findViewById(R.id.result_text)).setText("");
+        String currentSearch = getCurrentSearch();
+        Log.d(TAG, "current search: " + currentSearch);
+
+        // Logic for deciding whether to start a new litter object or not
+        if (mLitter == null &&
+                (currentSearch.equals(TYPE_SEARCH) || currentSearch.equals(BRAND_SEARCH))) {
+            Log.d(TAG, "starting litter item");
+            litterLogged = false;
+            brandLogged = false;
+            typeLogged = false;
+            startLitterItem();
+            return;
+        }
+
         if (hypothesis != null) {
             String text = hypothesis.getHypstr();
-            // Check whether litter object has already been created
-            if(mLitter != null) {
 
+            if (mLitter != null) {
                 // Ensures litter object has not already been fully populated with data
-                if (mLitter.getBrand() == null || mLitter.getType() == null) {
+                if (!litterLogged) {
                     // Set litter brand/type if not already set
                     if (getCurrentSearch().equals(BRAND_SEARCH) && !text.equals(BRAND_SEARCH)) {
                         Toast.makeText(getActivity(), "litter brand set",Toast.LENGTH_SHORT).show();
                         mLitter.setBrand(text);
+                        brandLogged = true;
                     }
                     if (getCurrentSearch().equals(TYPE_SEARCH) && !text.equals(TYPE_SEARCH)) {
                         Toast.makeText(getActivity(), "litter type set",Toast.LENGTH_SHORT).show();
                         mLitter.setType(text);
+                        typeLogged = true;
                     }
-                    // Return to litter search screen while Litter object not fully populated
-                    switchSearch(LITTER_SEARCH);
+
+                    // Return to menu search while Litter object not fully populated
+                    switchSearch(MENU_SEARCH);
                 }
                 // Insert litter object into database and reset litter object to null
                 // if litter object is fully populated
-                if (mLitter.getBrand() != null && mLitter.getType() != null) {
+                if (brandLogged && typeLogged) {
                     mLitterManager.insertLitter(mLitter);
-                    switchSearch(INTRO);
+                    switchSearch(MENU_SEARCH);
                     String toastText = "litter object " + mLitter.getBrand() + ": "
                             + mLitter.getType() + " successfully logged";
                     Toast.makeText(getActivity(), toastText, Toast.LENGTH_LONG).show();
                     mSpeaker.speak(toastText, TextToSpeech.QUEUE_FLUSH, null);
+                    litterLogged = true;
                     mLitter = null;
                     return;
                 }
@@ -206,8 +251,18 @@ public class LitterMapperFragment extends Fragment implements
 
     @Override
     public void onEndOfSpeech() {
-        if (!getCurrentSearch().equals(INTRO)) {
-            switchSearch(INTRO);
+
+        // Stop listening to make sure audio is logged for brands/type/bin
+        // If this is not done then onresult gets called with no hypothesis string
+        // due to switchSearch being called
+        if (getCurrentSearch().equals(BRAND_SEARCH)
+                || getCurrentSearch().equals(TYPE_SEARCH)
+                || getCurrentSearch().equals(BIN_SEARCH)) {
+            stopListening();
+        }
+
+        if (!getCurrentSearch().equals(MENU_SEARCH)) {
+            nextSearch = MENU_SEARCH;
         }
     }
 
@@ -221,7 +276,7 @@ public class LitterMapperFragment extends Fragment implements
         recognizer.stop();
 
         if (!searchName.equals(INTRO)) {
-            // start and immediately stop recognizer in order to update searchName
+//            // start and immediately stop recognizer in order to update searchName
             recognizer.startListening(searchName);
             recognizer.stop();
             updateListeningStatus(false);
@@ -231,6 +286,7 @@ public class LitterMapperFragment extends Fragment implements
         String caption = getResources().getString(captions.get(searchName));
         ((TextView) getView().findViewById(R.id.caption_text)).setText(caption);
     }
+
 
     private void setupRecognizer(File assetsDir) throws IOException {
         recognizer = defaultSetup()
@@ -250,11 +306,12 @@ public class LitterMapperFragment extends Fragment implements
         recognizer.addListener(this);
 
 //        //Keyword activation for initializing voice-recognition
-//        recognizer.addKeyphraseSearch(INTRO, KEYPHRASE);
+//        File menuKeyWord = new File(assetsDir, "menu.keyword");
+//        recognizer.addKeywordSearch(MENU_SEARCH, menuKeyWord);
 
-//        // Grammar based search switching to logging different types of data
-//        File menuGrammar = new File(assetsDir, "menu.gram");
-//        recognizer.addGrammarSearch(MENU_SEARCH, menuGrammar);
+        // Grammar based search switching to logging different types of data
+        File menuGrammar = new File(assetsDir, "menu.gram");
+        recognizer.addGrammarSearch(MENU_SEARCH, menuGrammar);
 
         // Grammar based search for litter menu
         File litterGrammar = new File(assetsDir, "litter.gram");
@@ -268,9 +325,9 @@ public class LitterMapperFragment extends Fragment implements
         File brandGrammar = new File(assetsDir, "brand.gram");
         recognizer.addGrammarSearch(BRAND_SEARCH, brandGrammar);
 
-//        // Bin search
-//        File binGrammar = new File(assetsDir, "bin.gram");
-//        recognizer.addGrammarSearch(BIN_SEARCH, binGrammar);
+        // Bin search
+        File binGrammar = new File(assetsDir, "bin.gram");
+        recognizer.addGrammarSearch(BIN_SEARCH, binGrammar);
     }
 
     @Override
@@ -280,16 +337,16 @@ public class LitterMapperFragment extends Fragment implements
 
     @Override
     public void onTimeout() {
-        switchSearch(INTRO);
+        switchSearch(MENU_SEARCH);
     }
 
     public void updateListeningStatus(boolean listening) {
-        mListening = listening;
+        this.listening = listening;
     }
 
 
     public void startListening(String currentSearch) {
-        if(!mListening) {
+        if(!listening) {
             recognizer.stop();
             recognizer.startListening(currentSearch);
             updateListeningStatus(true);
@@ -299,5 +356,14 @@ public class LitterMapperFragment extends Fragment implements
     public void stopListening() {
         recognizer.stop();
         updateListeningStatus(false);
-       }
+    }
+
+    public void toggleListening(String currentSearch) {
+        if (!listening) {
+            startListening(getCurrentSearch());
+        }
+        else {
+            stopListening();
+        }
+    }
 }

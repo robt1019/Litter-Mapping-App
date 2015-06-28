@@ -19,12 +19,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name="RemoteControlReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-        </receiver>
-        <activity android:name=".LitterMapperActivity"
+        <activity android:name=".PocketSphinxActivity"
+            android:label="Litter Mapper" />
+        <activity android:name=".GoogleVoiceActivity"
             android:label="Litter Mapper" />
     </application>
 

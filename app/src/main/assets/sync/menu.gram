@@ -2,4 +2,4 @@
 
 grammar menu;
 
-public <menu> = litter item | bin item;
+public <menu> = litter type | litter brand | log rubbish bin;

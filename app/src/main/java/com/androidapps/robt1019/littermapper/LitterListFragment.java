@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
 /**
@@ -50,10 +49,13 @@ public class LitterListFragment extends ListFragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_item_new_litter:
-                Intent i = new Intent(getActivity(), LitterMapperActivity.class);
+            case R.id.menu_item_new_offline:
+                Intent i = new Intent(getActivity(), PocketSphinxActivity.class);
                 startActivityForResult(i, REQUEST_NEW_LITTER);
                 return true;
+            case R.id.menu_item_new_online:
+                Intent j = new Intent(getActivity(), GoogleVoiceActivity.class);
+                startActivityForResult(j, REQUEST_NEW_LITTER);
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -71,8 +73,8 @@ public class LitterListFragment extends ListFragment {
 //    @Override
 //    public void onListItemClick(ListView l, View v, int position, long id) {
 //        // the id argument will be the Litter ID; This is given by CursorAdapter for free
-//        Intent i = new Intent(getActivity(), LitterMapperActivity.class);
-//        i.putExtra(LitterMapperActivity.EXTRA_LITTER_ID, id);
+//        Intent i = new Intent(getActivity(), PocketSphinxActivity.class);
+//        i.putExtra(PocketSphinxActivity.EXTRA_LITTER_ID, id);
 //        startActivity(i);
 //    }
 
