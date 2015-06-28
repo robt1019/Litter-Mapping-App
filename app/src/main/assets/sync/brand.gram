@@ -6,6 +6,7 @@ grammar litter;
           burger king   |
           walls         |
           walkers       |
-          lucozade      ;
+          lucozade      |
+          k f c         ;
 
 public <litter> = <item>+;

@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Litter Mapper</string>
-    <string name="kws_caption">Volume down to log item. Hold volume up to speak</string>
-    <string name="menu_caption">Listening. Say \'litter item\' to report a piece of litter or \'bin item\' to report a bin</string>
+    <string name="kws_caption">\"Litter Type\", \"Litter Brand\", or \"Log Rubbish Bin\"</string>
+    <string name="menu_caption">\"Litter Type\", \"Litter Brand\", or \"Log Rubbish Bin\"</string>
     <string name="litter_caption">Log \'litter type\' or log \'litter brand\'?</string>
     <string name="bin_caption">What kind of bin was it? (\'Recycling\' or \'Landfill\')</string>
     <string name="brand_caption">What brand was it?</string>
@@ -9,4 +9,5 @@
     <string name="cell_text">Litter: </string>
     <string name="offline_option">New Offline outing</string>
     <string name="online_option">New Online outing</string>
+    <string name="start_listening_button">start listening</string>
 </resources>
