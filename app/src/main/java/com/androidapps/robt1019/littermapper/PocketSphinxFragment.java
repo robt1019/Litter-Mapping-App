@@ -291,7 +291,7 @@ public class PocketSphinxFragment extends Fragment implements
     private void setupRecognizer(File assetsDir) throws IOException {
         recognizer = defaultSetup()
                 .setAcousticModel(new File(assetsDir, "en-us-ptm"))
-                .setDictionary(new File(assetsDir, "cmudict-en-us.dict"))ls
+                .setDictionary(new File(assetsDir, "cmudict-en-us.dict"))
 
                         // To disable logging of raw audio comment out this call
                 .setRawLogDir(assetsDir)
