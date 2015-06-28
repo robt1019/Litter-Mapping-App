@@ -40,9 +40,6 @@ public class PocketSphinxFragment extends Fragment implements
     public static final String BIN_SEARCH  = "log rubbish bin";
     public static final String MENU_SEARCH = "menu";
 
-//    // Search term timeout period
-//    private static int SEARCH_TIMEOUT = 10000;
-
 //    // Keyword looking for to activate menu
 //    private static final String KEYPHRASE = "log item";
 
@@ -56,6 +53,9 @@ public class PocketSphinxFragment extends Fragment implements
     private boolean typeLogged = false;
     private boolean binLogged = false;
 
+    private String captionString;
+    private TextView captionArea;
+
     private SpeechRecognizer recognizer;
     private TextToSpeech mSpeaker;
     private HashMap<String, Integer> captions;
@@ -66,18 +66,21 @@ public class PocketSphinxFragment extends Fragment implements
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-//        // Default next search and current search are INTRO
-        nextSearch = MENU_SEARCH;
+
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+
+        if (savedInstanceState != null) {
+            nextSearch = savedInstanceState.getString(getCurrentSearch());
+            Log.d(TAG, "savedInstanceStateNextSearch: " + nextSearch);
+        }
+        else {
+            // Default next search and current search are INTRO
+            nextSearch = MENU_SEARCH;
+        }
+
         // initialize LitterManager if not already initialized
         mLitterManager = LitterManager.get(getActivity());
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        final View view =  inflater.inflate(R.layout.fragment_litter_mapper, container, false);
 
         // Prepare data for UIX
         captions = new HashMap<String, Integer>();
@@ -89,8 +92,7 @@ public class PocketSphinxFragment extends Fragment implements
         captions.put(BRAND_SEARCH, R.string.brand_caption);
         captions.put(TYPE_SEARCH, R.string.type_caption);
 
-        ((TextView) view.findViewById(R.id.caption_text))
-                .setText("Getting ready");
+        captionString = "Getting ready";
 
         // Set up recognizers in asynchronous method as it takes lots of time
         new AsyncTask<Void, Void, Exception>() {
@@ -120,8 +122,12 @@ public class PocketSphinxFragment extends Fragment implements
             @Override
             protected void onPostExecute(Exception result) {
                 if (result != null) {
-                    ((TextView) view.findViewById(R.id.caption_text))
-                            .setText("Failed to init recognizer " + result);
+
+                    captionString = "failed to init recognizer " + result;
+                    Toast.makeText(getActivity(),captionString,Toast.LENGTH_LONG).show();
+
+//                    ((TextView) view.findViewById(R.id.caption_text))
+//                            .setText("Failed to init recognizer " + result);
                 }
                 else {
                     Log.d(TAG, "onPostExecute");
@@ -129,6 +135,22 @@ public class PocketSphinxFragment extends Fragment implements
                 }
             }
         }.execute();
+
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        if (savedInstanceState != null) {
+//            String currentSearch = savedInstanceState.getString(nextSearch);
+//            Log.d(TAG, "nextSearch: " + nextSearch);
+            captionString = getResources().getString(captions.get(nextSearch));
+        }
+
+        final View view =  inflater.inflate(R.layout.fragment_litter_mapper, container, false);
+
+        captionArea = (TextView)view.findViewById(R.id.caption_text);
+        captionArea.setText(captionString);
 
         mStartListeningButton = (Button)view.findViewById(R.id.start_listening_button);
         mStartListeningButton.setOnClickListener(new View.OnClickListener() {
@@ -167,7 +189,6 @@ public class PocketSphinxFragment extends Fragment implements
 //            switchSearch(MENU_SEARCH);
 //        }
         if (text.equals(BIN_SEARCH)) {
-//            switchSearchString(BIN_SEARCH);
             switchSearch(BIN_SEARCH);
         }
 //        else if (text.equals(LITTER_SEARCH)) {
@@ -272,6 +293,8 @@ public class PocketSphinxFragment extends Fragment implements
 
     // Switch to different search string
     public void switchSearch(String searchName) {
+
+        nextSearch = searchName;
 
         recognizer.stop();
 
