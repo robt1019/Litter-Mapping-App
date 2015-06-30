@@ -1,14 +1,20 @@
 package com.androidapps.robt1019.littermapper;
 
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.KeyEvent;
 
 
 public class GoogleVoiceActivity extends SingleFragmentActivity {
 
-    // find Google Voice fragment to use its public methods
-    private GoogleVoiceFragment mGoogleVoiceFragment = (GoogleVoiceFragment)getSupportFragmentManager()
-            .findFragmentById(R.id.fragmentContainer);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if(savedInstanceState != null) {
+
+        }
+    }
 
     @Override
     protected Fragment createFragment() {

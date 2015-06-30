@@ -3,9 +3,9 @@
     <string name="kws_caption">\"Litter Type\", \"Litter Brand\", or \"Log Rubbish Bin\"</string>
     <string name="menu_caption">\"Litter Type\", \"Litter Brand\", or \"Log Rubbish Bin\"</string>
     <string name="litter_caption">Log \'litter type\' or log \'litter brand\'?</string>
-    <string name="bin_caption">What kind of bin was it? (\'Recycling\' or \'Landfill\')</string>
+    <string name="bin_caption">What kind of bin was it? (\'Recycling bin\' or \'Landfill bin\')</string>
     <string name="brand_caption">What brand was it?</string>
-    <string name="type_caption">What type of litter was it? (\'Glass\', \'plastic\' or \'can\')</string>
+    <string name="type_caption">What type of litter was it? (\'Glass\', \'plastic\' or \'metal\')</string>
     <string name="cell_text">Litter: </string>
     <string name="offline_option">New Offline outing</string>
     <string name="online_option">New Online outing</string>

@@ -17,10 +17,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <Button
+    <ImageButton
         android:id="@+id/start_listening_button"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="@string/start_listening_button"/>
+        android:layout_below="@+id/text1"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:layout_marginTop="37dp"
+        android:src="@android:drawable/ic_btn_speak_now" />
+
 
 </LinearLayout>

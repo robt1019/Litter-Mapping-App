@@ -11,7 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import org.apache.commons.lang3.StringUtils;
@@ -29,21 +29,35 @@ public class GoogleVoiceFragment extends Fragment {
     private Handler mHandler = new Handler();
     private TextView resultText;
     private Intent mSpeechIntent;
-    private Button mStartListeningButton;
-    boolean killCommanded = false;
+    private ImageButton mStartListeningButton;
+    private String[] mCurrentSearch;
 
     // Valid search terms
-    private static final String[] VALID_COMMANDS = {
-            "bin",
-            "rubbish",
-            "reset"
+    private static final String[] MENU_COMMANDS = {
+            "litter bin",
+            "item material",
+            "item brand"
     };
 
-    private static final String [] VALID_BRANDS = {
-
+    private static final String[] VALID_BRANDS = {
+            "McDonald's",
+            "Burger King",
+            "Lucozade",
+            "Powerade"
     };
 
-    private static final int VALID_COMMANDS_SIZE = VALID_COMMANDS.length;
+    private static final String[] BIN_TYPES = {
+            "recycling",
+            "landfill"
+    };
+
+    private static final String[] RUBBISH_MATERIALS = {
+            "metal",
+            "plastic",
+            "glass",
+            "other"
+    };
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -53,7 +67,7 @@ public class GoogleVoiceFragment extends Fragment {
         resultText = (TextView)view.findViewById(R.id.caption_text);
         resultText.setText("Start talking");
 
-        mStartListeningButton = (Button)view.findViewById(R.id.start_listening_button);
+        mStartListeningButton = (ImageButton)view.findViewById(R.id.start_listening_button);
         mStartListeningButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -77,34 +91,35 @@ public class GoogleVoiceFragment extends Fragment {
         mSpeechIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,
                 "com.androidapps.robt1019.littermapper");
 
-        mSpeechIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,
-                "com.androidapps.robt1019.littermapper");
-
         mSpeechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
+//                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
 
         mSpeechIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 20);
 
         mSpeechIntent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
 
-//        mSpeechRecognizer.startListening(mSpeechIntent);
+        mCurrentSearch = MENU_COMMANDS;
 
         super.onStart();
     }
 
-    private String getResponse(int command) {
+    private String getMenuResponse(int command) {
 
-        String returnString = "I'm sorry, I don't recognize that option.";
+        String returnString = "litter bin, item material or item brand";
 
         switch(command) {
             case 0:
-                returnString = "bin";
+                returnString = "What kind of bin was it? (\"Recycling\" or \"Landfill\")";
+                mCurrentSearch = BIN_TYPES;
                 break;
             case 1:
-                returnString = "rubbish";
+                returnString = "What material was it? (\"Glass\", \"Plastic\" or \"Metal\")?";
+                mCurrentSearch = RUBBISH_MATERIALS;
                 break;
             case 2:
-                returnString = "Reset";
+                returnString = "What brand was it?";
+                mCurrentSearch = VALID_BRANDS;
             default:
                 break;
         }
@@ -122,25 +137,27 @@ public class GoogleVoiceFragment extends Fragment {
     }
 
     // Magic algorithm for matching words. You don't understand this code yet
-    private void processCommand(ArrayList<String> matchStrings) {
+    private void processCommand(ArrayList<String> matchStrings, String[] currentSearch) {
         String response = "I'm sorry I don't recognize that option.";
         int maxStrings = matchStrings.size();
         boolean resultFound = false;
-        for (int i=0; i<VALID_COMMANDS_SIZE && !resultFound; i++) {
+        for (int i=0; i<currentSearch.length && !resultFound; i++) {
             for (int j=0; j<maxStrings && !resultFound; j++) {
                 if (StringUtils.getLevenshteinDistance(matchStrings.get(j),
-                        VALID_COMMANDS[i]) < (VALID_COMMANDS[i].length() / 3)) {
-                    response = getResponse(i);
+                        currentSearch[i]) < (currentSearch[i].length() / 3)) {
+                    if(mCurrentSearch.equals(MENU_COMMANDS)) {
+                        response = getMenuResponse(i);
+                    }
                 }
             }
         }
-
         final String finalResponse = response;
         mHandler.post(new Runnable() {
             public void run() {
                 resultText.setText(finalResponse);
             }
         });
+        Toast.makeText(getActivity(),matchStrings.get(0),Toast.LENGTH_SHORT).show();
     }
 
     public void startListening() {
@@ -161,15 +178,12 @@ public class GoogleVoiceFragment extends Fragment {
 
         @Override
         public void onError(int i) {
-            // If critical error then exit
             if (i == SpeechRecognizer.ERROR_CLIENT
                     || i == SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS) {
                 Log.d(TAG, "client error");
             }
-            // Otherwise try again
             else {
-                Log.d(TAG, "other error");
-//                mSpeechRecognizer.startListening(mSpeechIntent);
+                Log.d(TAG, "other error: " + i);
             }
         }
 
@@ -191,19 +205,14 @@ public class GoogleVoiceFragment extends Fragment {
         @Override
         public void onResults(Bundle bundle) {
             Log.d(TAG, "onResults");
+            Log.d(TAG, "currentSearch = " + mCurrentSearch[0]);
             ArrayList<String> matches = null;
             if (bundle != null) {
                 matches = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                 if (matches != null) {
                     Log.d(TAG, "results are " + matches.toString());
                     final ArrayList<String> matchesStrings = matches;
-                    processCommand(matchesStrings);
-                    if (!killCommanded) {
-//                        mSpeechRecognizer.startListening(mSpeechIntent);
-                    }
-                    else {
-                        Toast.makeText(getActivity(),"you can't quit that easy", Toast.LENGTH_SHORT).show();
-                    }
+                    processCommand(matchesStrings, mCurrentSearch);
                 }
             }
         }

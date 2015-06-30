@@ -2,7 +2,13 @@
 
 grammar litter;
 
-<item> =  mcdonald's    |
+<item> =  
+          reset item    |
+          mcdonald's    |
+          coca cola     |
+          pepsi         |
+          dr pepper     |
+          fanta         |
           burger king   |
           walls         |
           walkers       |

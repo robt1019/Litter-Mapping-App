@@ -2,8 +2,9 @@
 
 grammar type;
 
-<item> =  glass       |
-          can         |
+<item> =  reset item  |
+          glass       |
+          metal       |
           plastic     ;
 
 public <type> = <item>+;

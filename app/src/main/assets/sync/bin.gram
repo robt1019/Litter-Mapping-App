@@ -2,4 +2,4 @@
 
 grammar bin;
 
-public <type> = recycling | landfill;
+public <type> = reset item| recycling bin | landfill bin;
